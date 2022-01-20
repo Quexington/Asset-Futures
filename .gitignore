@@ -1,0 +1,4 @@
+/venv
+main.sym
+.pytest_cache
+__pycache__/

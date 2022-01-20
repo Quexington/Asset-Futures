@@ -1,0 +1,12 @@
+(mod (amount future_ph mint_ph)
+
+  (include condition_codes.clib)
+
+  (defconstant ONE_BILLION 1000000000)
+
+  (list
+    (list CREATE_COIN future_ph amount)
+    (list CREATE_COIN mint_ph (f (divmod amount ONE_BILLION)))
+    (list CREATE_COIN_ANNOUNCEMENT (sha256 amount future_ph mint_ph))
+  )
+)

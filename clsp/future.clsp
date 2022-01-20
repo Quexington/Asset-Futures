@@ -1,0 +1,75 @@
+(mod
+  (
+      THIS_MOD_HASH
+      CAT_MOD_HASH
+      TAIL_MOD_HASH
+      LAUNCHER_ID
+      UNLOCK_TIME
+      cat_inner_puzhash
+      amount_redeemed
+      my_amount
+  )
+
+  (defconstant ONE_BILLION 1000000000)
+
+  (include condition_codes.clib)
+  (include curry_and_treehash.clib)
+
+  (defun create_this_ph (THIS_MOD_HASH CAT_MOD_HASH TAIL_MOD_HASH LAUNCHER_ID UNLOCK_TIME)
+    (puzzle-hash-of-curried-function THIS_MOD_HASH
+      (sha256 1 UNLOCK_TIME)
+      (sha256 1 LAUNCHER_ID)
+      (sha256 1 TAIL_MOD_HASH)
+      (sha256 1 CAT_MOD_HASH)
+      (sha256 1 THIS_MOD_HASH)
+    )
+  )
+
+  (defun create_tail_ph (TAIL_MOD_HASH LAUNCHER_ID this_ph)
+    (puzzle-hash-of-curried-function TAIL_MOD_HASH
+      (sha256 1 this_ph)
+      (sha256 1 LAUNCHER_ID)
+    )
+  )
+
+  (defun create_cat_ph (CAT_MOD_HASH TAIL_MOD_HASH LAUNCHER_ID this_ph cat_inner_puzhash)
+    (puzzle-hash-of-curried-function CAT_MOD_HASH
+      cat_inner_puzhash
+      (sha256 1 (create_tail_ph TAIL_MOD_HASH LAUNCHER_ID this_ph))
+      (sha256 1 CAT_MOD_HASH)
+    )
+  )
+
+  (defun main
+    (
+        this_ph
+        CAT_MOD_HASH
+        TAIL_MOD_HASH
+        LAUNCHER_ID
+        UNLOCK_TIME
+        cat_inner_puzhash
+        amount_redeemed
+        my_amount
+    )
+    (list
+      (list CREATE_COIN cat_inner_puzhash amount_redeemed)
+      (list CREATE_COIN this_ph (- my_amount amount_redeemed))
+      (list ASSERT_MY_AMOUNT my_amount)
+      (list ASSERT_SECONDS_ABSOLUTE UNLOCK_TIME)
+      (list ASSERT_PUZZLE_ANNOUNCEMENT (sha256 (create_cat_ph CAT_MOD_HASH TAIL_MOD_HASH LAUNCHER_ID this_ph cat_inner_puzhash) (f (divmod amount_redeemed ONE_BILLION))))
+      (list CREATE_PUZZLE_ANNOUNCEMENT (f (divmod amount_redeemed ONE_BILLION)))
+    )
+  )
+
+  (main
+      (create_this_ph THIS_MOD_HASH CAT_MOD_HASH TAIL_MOD_HASH LAUNCHER_ID UNLOCK_TIME)
+      CAT_MOD_HASH
+      TAIL_MOD_HASH
+      LAUNCHER_ID
+      UNLOCK_TIME
+      cat_inner_puzhash
+      amount_redeemed
+      my_amount
+  )
+
+)

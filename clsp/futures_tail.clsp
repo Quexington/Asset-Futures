@@ -1,0 +1,26 @@
+(mod (
+      LAUNCHER_ID
+      FUTURE_PUZZLE_HASH
+      Truths
+      parent_is_cat
+      lineage_proof
+      delta
+      inner_conditions
+      ()
+    )
+
+    (include condition_codes.clib)
+    (include utility_macros.clib)
+
+    ; Returns nil since we don't need to add any conditions
+    (if (or parent_is_cat (= (f (r (r Truths))) LAUNCHER_ID))
+        (if delta
+            (if (> 0 delta)
+              (list (list CREATE_PUZZLE_ANNOUNCEMENT (* delta -1)) (list ASSERT_PUZZLE_ANNOUNCEMENT (sha256 FUTURE_PUZZLE_HASH (* delta -1))))
+              (x)
+            )
+            ()
+        )
+        (x)
+    )
+)
